@@ -2,7 +2,8 @@
 A simple one page AI-powered alcohol label verification app as a React artifact.
 
 # Requirements Analysis
-This is a great take-home project spec. Let me build a solid AI-powered alcohol label verification app as a React artifact. I'll design the UI thoughtfully for the compliance agent audience (accessible, clear, efficient) and wire it to the Anthropic API for vision + text analysis.Now I'll build the full app. This is a substantial React artifact with the Anthropic API powering the vision analysis.Here's the full TTB Label Verification app, built to address everything from the stakeholder interviews. Here's what's packed in:
+
+After thouroughly reviewing the stakeholder interviews, a clear picture has emerged that there is an urgent need to develop a new Ai-based system to help TTB (Alcohol and Tobacco Tax and Trade Bureau) solving the COLA (Certificate of Label Approval) application efficiently in a timely manner. To address the pain points and user frsutrations, here is the list of key features that the new TTB Label Verification app must have:
 
 ## Core verification
 — upload any label image and the AI checks brand name, class/type, alcohol content, net contents, the government warning statement, and producer info against what you've entered from the COLA application. Results show pass/fail/warn per field with found vs. expected values and a timing readout (Sarah's "5 second" requirement is baked in — you'll see the elapsed time on each result card).
@@ -21,7 +22,6 @@ This is a great take-home project spec. Let me build a solid AI-powered alcohol 
 
 ## Agent notes section
 — each result ends with 2–3 sentences of observations for the reviewer: unusual elements, image quality issues, things needing human judgment.
-
 
 # System Design Considerations
 ## Overall Consideration
