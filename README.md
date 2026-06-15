@@ -25,8 +25,24 @@ After thouroughly reviewing the stakeholder interviews, a clear picture has emer
 
 # System Design Considerations
 ## Overall Consideration
-## UI
+Based on the requirements gathered, a simple one-page web application would be suffice.
+
+## UX (User Experience)
+The UI design is the following:
+— An area for user to place a label picture for validation (top left)
+— Display beverage type (beer, wine, distilled spirits) common elements on the left:
+  Brand name
+  Class/type designation
+  Alcohol content (with some exceptions for certain wine/beer)
+  Net contents
+  Name and address of bottler/producer
+  Country of origin for imports
+  Government Health Warning Statement (mandatory on all alcohol beverages)
+— Display the detailed label validation information (center + right side)
+
 ## Backend
+i have an extended experiece using Anthropic API in the past for a LangChain project. 
+
 # Implementation Details
 
 # How to Build & Test
