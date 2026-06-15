@@ -44,7 +44,14 @@ The UI design is the following:
 i have an extended experiece using Anthropic API in the past for a LangChain project. 
 
 # Implementation Details
+## A Simple One-Page HTML
+The index.html file is available in the source directory.
 
-# How to Build & Test
+## Apache Web Server
+The index.html is hosted by an Apache Web Server on a Ubuntu machine.
 
-**To test it:** upload any alcohol label photo (or an AI-generated one), fill in some application fields, and click Verify label. The batch mode works great with multiple images dropped at once.
+## System Diagram
+
+# How to Test
+
+Upload any alcohol label photo (or an AI-generated one), fill in some application fields, and click Verify label. The batch mode works great with multiple images dropped at once.
