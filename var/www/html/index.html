@@ -1,1 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Assisted Compliance Review by Wu Liu</title>
+<style>
+/* ── Reset & base ────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary:   #ffffff;
+  --bg-secondary: #f5f5f3;
+  --bg-tertiary:  #eeede9;
+  --text-primary:    #1a1a18;
+  --text-secondary:  #6b6b66;
+  --text-tertiary:   #9c9a92;
+  --border-light: rgba(0,0,0,0.12);
+  --border-mid:   rgba(0,0,0,0.22);
+  --blue:         #185FA5;
+  --blue-dark:    #0C447C;
+  --blue-bg:      #E6F1FB;
+  --blue-text:    #0C447C;
+  --green-bg:     #EAF3DE;
+  --green-text:   #27500A;
+  --red-bg:       #FCEBEB;
+  --red-text:     #791F1F;
+  --amber-bg:     #FAEEDA;
+  --amber-text:   #633806;
+  --radius-md:    8px;
+  --radius-lg:    12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary:   #1e1e1c;
+    --bg-secondary: #2a2a27;
+    --bg-tertiary:  #161614;
+    --text-primary:    #e8e6dc;
+    --text-secondary:  #9c9a92;
+    --text-tertiary:   #6b6b66;
+    --border-light: rgba(255,255,255,0.10);
+    --border-mid:   rgba(255,255,255,0.18);
+    --blue-bg:      #0C447C;
+    --blue-text:    #B5D4F4;
+    --green-bg:     #27500A;
+    --green-text:   #C0DD97;
+    --red-bg:       #501313;
+    --red-text:     #F7C1C1;
+    --amber-bg:     #412402;
+    --amber-text:   #FAC775;
+  }
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── Layout ──────────────────────────────────────────────── */
+.app { display: grid; grid-template-rows: auto 1fr; height: 100vh; overflow: hidden; }
+
+.header {
+  background: var(--bg-primary);
+  border-bottom: 0.5px solid var(--border-light);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.header-badge {
+  background: var(--blue);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+.header h1 { font-size: 14px; font-weight: 500; }
+.header-sub { font-size: 12px; color: var(--text-secondary); margin-left: auto; }
+
+.main {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  overflow: hidden;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.sidebar {
+  background: var(--bg-primary);
+  border-right: 0.5px solid var(--border-light);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20px;
+}
+
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 14px 16px 6px;
+}
+
+/* Upload zone */
+.upload-zone {
+  margin: 8px 14px;
+  border: 1.5px dashed var(--border-mid);
+  border-radius: var(--radius-lg);
+  padding: 20px 14px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s;
+}
+.upload-zone:hover, .upload-zone.drag-over { background: var(--bg-secondary); }
+.upload-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+.upload-icon { font-size: 24px; color: var(--text-tertiary); margin-bottom: 6px; }
+.upload-main { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+.upload-sub { font-size: 11px; color: var(--text-secondary); }
+
+/* Preview */
+.preview-wrap { margin: 0 14px 10px; display: none; }
+.preview-img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  border: 0.5px solid var(--border-light);
+  background: var(--bg-secondary);
+}
+.preview-name { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* Form */
+.form-wrap { padding: 0 14px 4px; }
+.field-group { margin-bottom: 10px; }
+.field-label { display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 3px; }
+.field-input {
+  width: 100%;
+  font-size: 12px;
+  padding: 7px 9px;
+  border: 0.5px solid var(--border-mid);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px rgba(24,95,165,0.15);
+}
+select.field-input { cursor: pointer; }
+
+/* Info tip */
+.info-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  background: var(--blue-bg);
+  color: var(--blue-text);
+  font-size: 11px;
+  border-radius: var(--radius-md);
+  padding: 7px 10px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+.info-tip-icon { flex-shrink: 0; margin-top: 1px; }
+
+/* Buttons */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: calc(100% - 28px);
+  margin: 10px 14px 0;
+  padding: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.btn-primary:hover { background: var(--blue-dark); }
+.btn-primary:disabled {
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: calc(100% - 28px);
+  margin: 8px 14px 0;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 0.5px solid var(--border-mid);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.btn-secondary:hover { background: var(--bg-secondary); }
+.btn-secondary.visible { display: flex; }
+
+/* Batch queue */
+.batch-section { display: none; padding: 0 14px 4px; }
+.batch-section.visible { display: block; }
+.progress-bar-track { height: 3px; background: var(--border-light); border-radius: 2px; margin-bottom: 8px; }
+.progress-bar-fill { height: 100%; background: var(--blue); border-radius: 2px; width: 0%; transition: width 0.3s; }
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 0;
+  font-size: 11px;
+  border-bottom: 0.5px solid var(--border-light);
+}
+.queue-item:last-child { border-bottom: none; }
+.queue-name { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--text-secondary); }
+.queue-status { font-size: 12px; }
+
+.divider { height: 0.5px; background: var(--border-light); margin: 10px 0; }
+
+/* ── Results pane ────────────────────────────────────────── */
+.results-pane {
+  overflow-y: auto;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--text-secondary);
+  gap: 10px;
+}
+.empty-icon { font-size: 32px; color: var(--border-mid); }
+.empty-title { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+.empty-sub { font-size: 12px; max-width: 260px; line-height: 1.6; }
+
+/* Result card */
+.result-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  border: 0.5px solid var(--border-light);
+  overflow: hidden;
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 0.5px solid var(--border-light);
+}
+.result-filename { font-size: 13px; font-weight: 500; flex: 1; }
+.result-elapsed { font-size: 11px; color: var(--text-tertiary); }
+.result-summary {
+  padding: 8px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-bottom: 0.5px solid var(--border-light);
+  line-height: 1.5;
+}
+
+.status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 20px;
+}
+.badge-pass   { background: var(--green-bg);  color: var(--green-text); }
+.badge-fail   { background: var(--red-bg);    color: var(--red-text); }
+.badge-warn   { background: var(--amber-bg);  color: var(--amber-text); }
+.badge-review { background: var(--blue-bg);   color: var(--blue-text); }
+.badge-pending { background: var(--bg-secondary); color: var(--text-secondary); }
+
+/* Check rows */
+.checks-list { padding: 8px 14px; }
+.check-row {
+  display: grid;
+  grid-template-columns: 18px 1fr auto;
+  gap: 8px;
+  align-items: start;
+  padding: 7px 0;
+  border-bottom: 0.5px solid var(--border-light);
+}
+.check-row:last-child { border-bottom: none; }
+.check-icon { font-size: 14px; padding-top: 1px; }
+.check-icon.pass   { color: var(--green-text); }
+.check-icon.fail   { color: var(--red-text); }
+.check-icon.warn   { color: var(--amber-text); }
+.check-icon.skip   { color: var(--text-tertiary); }
+.check-field { font-size: 12px; font-weight: 500; }
+.check-detail { font-size: 11px; color: var(--text-secondary); margin-top: 2px; line-height: 1.5; }
+.check-status-pill { font-size: 10px; color: var(--text-tertiary); white-space: nowrap; padding-top: 2px; }
+
+/* Agent notes */
+.agent-notes {
+  padding: 10px 14px;
+  border-top: 0.5px solid var(--border-light);
+  background: var(--bg-secondary);
+}
+.agent-notes-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 4px; }
+.agent-notes-text { font-size: 12px; line-height: 1.6; }
+
+/* Loading card */
+.loading-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Spinner */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border-light);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Header -->
+  <header class="header">
+    <span class="header-badge">TTB</span>
+    <h1>Label Verification</h1>
+    <span class="header-sub">AI-Assisted Compliance Review</span>
+  </header>
+
+  <div class="main">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="section-label">Upload label image</div>
+
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" id="file-input" accept="image/*" multiple aria-label="Upload label images">
+        <div class="upload-icon">↑</div>
+        <div class="upload-main">Drop image here or click to browse</div>
+        <div class="upload-sub">JPG, PNG, WEBP · single or batch</div>
+      </div>
+
+      <div class="preview-wrap" id="preview-wrap">
+        <img id="preview-img" class="preview-img" alt="Label preview">
+        <div class="preview-name" id="preview-name"></div>
+      </div>
+
+      <div class="batch-section" id="batch-section">
+        <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-bar"></div></div>
+        <div id="batch-queue"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label" style="padding-top:6px">Application data (from COLA)</div>
+
+      <div class="form-wrap">
+        <div class="info-tip">
+          <span class="info-tip-icon">ℹ</span>
+          Enter what the COLA application claims. The AI checks whether the label matches.
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="f-brand">Brand name</label>
+          <input class="field-input" id="f-brand" type="text" placeholder="e.g. OLD TOM DISTILLERY">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="f-class">Class / type</label>
+          <input class="field-input" id="f-class" type="text" placeholder="e.g. Kentucky Straight Bourbon Whiskey">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="f-abv">Alcohol content</label>
+          <input class="field-input" id="f-abv" type="text" placeholder="e.g. 45% Alc./Vol. (90 Proof)">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="f-net">Net contents</label>
+          <input class="field-input" id="f-net" type="text" placeholder="e.g. 750 mL">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="f-type">Beverage type</label>
+          <select class="field-input" id="f-type">
+            <option value="distilled_spirits">Distilled spirits</option>
+            <option value="wine">Wine</option>
+            <option value="beer">Beer / malt beverage</option>
+            <option value="other">Other / unknown</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="verify-btn" disabled aria-label="Verify current label">
+        ✓ Verify label
+      </button>
+      <button class="btn-secondary" id="batch-btn" aria-label="Verify all labels in batch">
+        ≡ Verify all in batch
+      </button>
+      <div style="height:12px"></div>
+    </aside>
+
+    <!-- Results pane -->
+    <main class="results-pane" id="results-pane" aria-live="polite" aria-label="Verification results">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">No labels reviewed yet</div>
+        <div class="empty-sub">
+          Upload a label image, fill in the application data, then click
+          <em>Verify label</em> to run an AI compliance check.
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+/**
+ * TTB Label Verification App
+ *
+ * Architecture:
+ *   1. User uploads label image(s) + fills COLA application data form
+ *   2. Each image is base64-encoded via FileReader API
+ *   3. A structured compliance prompt + the image are sent to Anthropic
+ *      /v1/messages (claude-sonnet-4-6) with vision capability
+ *   4. The API returns a JSON object with per-field check results
+ *   5. Results are rendered as compliance cards with pass/fail/warn indicators
+ *
+ * Key design decisions:
+ *   - No backend required; runs entirely in the browser
+ *   - Batch mode processes files sequentially (rate-limit friendly)
+ *   - Government warning check is strict per TTB requirements
+ *   - Fuzzy matching: obvious case/punctuation differences → WARN not FAIL
+ *   - Poor image quality → WARN with explanation, not automatic rejection
+ */
+
+/* ── State ─────────────────────────────────────────────── */
+const state = {
+  files: [],         // File[]
+  isLoading: false,  // prevents double-submit
+};
+
+/* ── DOM helpers ────────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+
+function escHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ── File handling ──────────────────────────────────────── */
+function handleFiles(fileList) {
+  if (!fileList || fileList.length === 0) return;
+  state.files = Array.from(fileList);
+
+  // Show preview of the first file
+  const reader = new FileReader();
+  reader.onload = e => {
+    $('preview-img').src = e.target.result;
+    $('preview-name').textContent = state.files.length > 1
+      ? `${state.files[0].name} (+${state.files.length - 1} more)`
+      : state.files[0].name;
+    $('preview-wrap').style.display = 'block';
+  };
+  reader.readAsDataURL(state.files[0]);
+
+  // Show batch queue for multiple files
+  if (state.files.length > 1) {
+    renderBatchQueue();
+    $('batch-section').classList.add('visible');
+    $('batch-btn').classList.add('visible');
+    $('verify-btn').textContent = '✓ Verify current image';
+  } else {
+    $('batch-section').classList.remove('visible');
+    $('batch-btn').classList.remove('visible');
+    $('verify-btn').textContent = '✓ Verify label';
+  }
+
+  $('verify-btn').disabled = false;
+}
+
+function renderBatchQueue() {
+  $('batch-queue').innerHTML = state.files
+    .map((f, i) => `
+      <div class="queue-item" id="queue-item-${i}">
+        <span style="color:var(--text-tertiary)">📄</span>
+        <span class="queue-name">${escHtml(f.name)}</span>
+        <span class="queue-status" id="queue-status-${i}">○</span>
+      </div>`)
+    .join('');
+}
+
+function updateQueueItem(idx, status) {
+  const el = $(`queue-status-${idx}`);
+  if (!el) return;
+  const icons = { processing: '⟳', done: '✓', error: '✗', pending: '○' };
+  const colors = { processing: 'var(--text-secondary)', done: 'var(--green-text)', error: 'var(--red-text)', pending: 'var(--text-tertiary)' };
+  el.textContent = icons[status] || '○';
+  el.style.color = colors[status] || 'var(--text-tertiary)';
+}
+
+function setProgress(done, total) {
+  $('progress-bar').style.width = Math.round((done / total) * 100) + '%';
+}
+
+/* ── Image encoding ─────────────────────────────────────── */
+async function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result.split(',')[1]);
+    r.onerror = () => reject(new Error('Failed to read file'));
+    r.readAsDataURL(file);
+  });
+}
+
+function getMimeType(file) {
+  return file.type || 'image/jpeg';
+}
+
+/* ── Form data ──────────────────────────────────────────── */
+function getFormData() {
+  return {
+    brand:    $('f-brand').value.trim(),
+    classType: $('f-class').value.trim(),
+    abv:      $('f-abv').value.trim(),
+    net:      $('f-net').value.trim(),
+    bevType:  $('f-type').value,
+  };
+}
+
+/* ── Prompt builder ─────────────────────────────────────── */
+function buildCompliancePrompt(form) {
+  const typeLabels = {
+    distilled_spirits: 'Distilled spirits',
+    wine:  'Wine',
+    beer:  'Beer / malt beverage',
+    other: 'Alcohol beverage',
+  };
+  const bevLabel = typeLabels[form.bevType] || 'Alcohol beverage';
+
+  const fields = [
+    form.brand    && `Brand name: "${form.brand}"`,
+    form.classType && `Class/type: "${form.classType}"`,
+    form.abv      && `Alcohol content: "${form.abv}"`,
+    form.net      && `Net contents: "${form.net}"`,
+  ].filter(Boolean);
+
+  return `You are a TTB (Alcohol and Tobacco Tax and Trade Bureau) label compliance specialist.
+Analyze the provided alcohol label image and verify it meets TTB requirements.
+
+Application data on file:
+${fields.length ? fields.join('\n') : '(No application data provided — check for presence of required fields only)'}
+Beverage type: ${bevLabel}
+
+Perform a thorough compliance check and respond ONLY with a valid JSON object (no markdown fences, no preamble):
+
+{
+  "overall": "PASS" | "FAIL" | "WARN",
+  "summary": "One sentence overall assessment",
+  "checks": [
+    {
+      "field": "Brand name",
+      "status": "PASS" | "FAIL" | "WARN" | "NOT_FOUND",
+      "found": "exact text on label, or null if absent",
+      "expected": "application value, or null if none provided",
+      "note": "Treat obvious case/punctuation variants (e.g. ALL CAPS vs Title Case of same brand) as WARN, not FAIL. Explain any discrepancy."
+    },
+    {
+      "field": "Class / type",
+      "status": "...",
+      "found": "...",
+      "expected": "...",
+      "note": "..."
+    },
+    {
+      "field": "Alcohol content",
+      "status": "...",
+      "found": "...",
+      "expected": "...",
+      "note": "Both % ABV and proof (if shown) must match. Numeric difference → FAIL."
+    },
+    {
+      "field": "Net contents",
+      "status": "...",
+      "found": "...",
+      "expected": "...",
+      "note": "..."
+    },
+    {
+      "field": "Government warning",
+      "status": "...",
+      "found": "First 50 characters of warning text if present, else null",
+      "expected": "Standard TTB government warning statement",
+      "note": "FAIL if: missing, 'GOVERNMENT WARNING:' not in all caps and bold, wording altered, text too small to read clearly, or statement is buried. WARN if font size is a concern but text is otherwise correct. The exact required text is: 'GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.'"
+    },
+    {
+      "field": "Producer / bottler",
+      "status": "...",
+      "found": "Name and address if visible, else null",
+      "expected": "Name and address of bottler/producer required",
+      "note": "FAIL only if completely absent. Partial info → WARN."
+    }
+  ],
+  "agentNotes": "2-3 sentences for the compliance agent: image quality observations, unusual elements, creative attempts to modify required text, or anything requiring human judgment."
+}
+
+If image quality prevents reading a field clearly, set status to WARN and explain in note.`;
+}
+
+/* ── API call ───────────────────────────────────────────── */
+async function analyzeLabel(base64, mimeType, prompt) {
+  const response = await fetch('/proxy.php', {
+    method: 'POST',
+    headers: { 
+    	'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2000,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: { type: 'base64', media_type: mimeType, data: base64 }
+          },
+          { type: 'text', text: prompt }
+        ]
+      }]
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`API error ${response.status}: ${err}`);
+  }
+
+  const data = await response.json();
+  const text = data.content.map(b => b.text || '').join('');
+
+  // Strip any accidental markdown fences
+  const clean = text.replace(/```json|```/g, '').trim();
+  return JSON.parse(clean);
+}
+
+/* ── UI: loading card ───────────────────────────────────── */
+function createLoadingCard(filename) {
+  const el = document.createElement('div');
+  el.className = 'result-card';
+  el.id = 'loading-card';
+  el.innerHTML = `
+    <div class="result-header">
+      <span class="status-badge badge-pending">Analyzing…</span>
+      <span class="result-filename">${escHtml(filename)}</span>
+    </div>
+    <div class="loading-row">
+      <div class="spinner"></div>
+      Checking label against TTB requirements…
+    </div>`;
+  return el;
+}
+
+/* ── UI: result card ────────────────────────────────────── */
+const STATUS_ICON = {
+  PASS:      { glyph: '✓', cls: 'pass', label: 'Pass' },
+  FAIL:      { glyph: '✗', cls: 'fail', label: 'Fail' },
+  WARN:      { glyph: '!', cls: 'warn', label: 'Warn' },
+  NOT_FOUND: { glyph: '–', cls: 'skip', label: 'Not found' },
+};
+
+const OVERALL_BADGE = {
+  PASS: 'badge-pass',
+  FAIL: 'badge-fail',
+  WARN: 'badge-warn',
+};
+
+const OVERALL_LABEL = {
+  PASS: 'Approved',
+  FAIL: 'Rejected',
+  WARN: 'Review needed',
+};
+
+function createResultCard(result, filename, elapsedMs) {
+  const overallBadge = OVERALL_BADGE[result.overall] || 'badge-pending';
+  const overallLabel = OVERALL_LABEL[result.overall] || result.overall;
+  const elapsed = elapsedMs ? `${(elapsedMs / 1000).toFixed(1)}s` : '';
+
+  const checksHtml = (result.checks || []).map(check => {
+    const icon = STATUS_ICON[check.status] || STATUS_ICON['NOT_FOUND'];
+    const foundLine  = check.found    ? `<strong>Found:</strong> ${escHtml(check.found)}` : 'Not detected on label';
+    const expectLine = check.expected && check.expected !== check.found
+      ? `<br><span style="color:var(--text-tertiary)">Expected:</span> ${escHtml(check.expected)}`
+      : '';
+    const noteLine   = check.note ? `<br>${escHtml(check.note)}` : '';
+    return `
+      <div class="check-row">
+        <span class="check-icon ${icon.cls}" aria-label="${icon.label}">${icon.glyph}</span>
+        <div>
+          <div class="check-field">${escHtml(check.field)}</div>
+          <div class="check-detail">${foundLine}${expectLine}${noteLine}</div>
+        </div>
+        <div class="check-status-pill">${check.status}</div>
+      </div>`;
+  }).join('');
+
+  const notesHtml = result.agentNotes ? `
+    <div class="agent-notes">
+      <div class="agent-notes-label">Agent notes</div>
+      <div class="agent-notes-text">${escHtml(result.agentNotes)}</div>
+    </div>` : '';
+
+  const el = document.createElement('div');
+  el.className = 'result-card';
+  el.innerHTML = `
+    <div class="result-header">
+      <span class="status-badge ${overallBadge}">${overallLabel}</span>
+      <span class="result-filename">${escHtml(filename)}</span>
+      ${elapsed ? `<span class="result-elapsed">${elapsed}</span>` : ''}
+    </div>
+    <div class="result-summary">${escHtml(result.summary || '')}</div>
+    <div class="checks-list">${checksHtml}</div>
+    ${notesHtml}`;
+  return el;
+}
+
+function createErrorCard(filename, message) {
+  const el = document.createElement('div');
+  el.className = 'result-card';
+  el.innerHTML = `
+    <div class="result-header">
+      <span class="status-badge badge-fail">Error</span>
+      <span class="result-filename">${escHtml(filename)}</span>
+    </div>
+    <div style="padding:14px;font-size:12px;color:var(--red-text);line-height:1.6;">
+      Could not analyze label: ${escHtml(message)}<br>
+      <span style="color:var(--text-secondary)">Please check your connection and try again.</span>
+    </div>`;
+  return el;
+}
+
+/* ── Core: run single verification ─────────────────────── */
+async function runVerify(file) {
+  const pane = $('results-pane');
+  $('empty-state').style.display = 'none';
+
+  const loadCard = createLoadingCard(file.name);
+  pane.prepend(loadCard);
+
+  let result;
+  const start = Date.now();
+  try {
+    const base64 = await fileToBase64(file);
+    const mime   = getMimeType(file);
+    const prompt = buildCompliancePrompt(getFormData());
+    result = await analyzeLabel(base64, mime, prompt);
+    loadCard.replaceWith(createResultCard(result, file.name, Date.now() - start));
+  } catch (err) {
+    loadCard.replaceWith(createErrorCard(file.name, err.message));
+  }
+}
+
+/* ── Core: run batch ────────────────────────────────────── */
+async function runBatch() {
+  const pane = $('results-pane');
+  $('empty-state').style.display = 'none';
+  $('verify-btn').disabled = true;
+  $('batch-btn').disabled  = true;
+
+  setProgress(0, state.files.length);
+
+  for (let i = 0; i < state.files.length; i++) {
+    const file = state.files[i];
+    updateQueueItem(i, 'processing');
+
+    const loadCard = createLoadingCard(file.name);
+    pane.prepend(loadCard);
+
+    const start = Date.now();
+    try {
+      const base64 = await fileToBase64(file);
+      const mime   = getMimeType(file);
+      const prompt = buildCompliancePrompt(getFormData());
+      const result = await analyzeLabel(base64, mime, prompt);
+      loadCard.replaceWith(createResultCard(result, file.name, Date.now() - start));
+      updateQueueItem(i, 'done');
+    } catch (err) {
+      loadCard.replaceWith(createErrorCard(file.name, err.message));
+      updateQueueItem(i, 'error');
+    }
+
+    setProgress(i + 1, state.files.length);
+  }
+
+  $('verify-btn').disabled = false;
+  $('batch-btn').disabled  = false;
+}
+
+/* ── Event wiring ───────────────────────────────────────── */
+$('file-input').addEventListener('change', e => handleFiles(e.target.files));
+
+// Drag-and-drop
+const zone = $('upload-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+});
+
+$('verify-btn').addEventListener('click', async () => {
+  if (state.isLoading || state.files.length === 0) return;
+  state.isLoading = true;
+  $('verify-btn').disabled = true;
+  await runVerify(state.files[0]);
+  state.isLoading = false;
+  $('verify-btn').disabled = false;
+});
+
+$('batch-btn').addEventListener('click', async () => {
+  if (state.isLoading) return;
+  state.isLoading = true;
+  await runBatch();
+  state.isLoading = false;
+});
+</script>
+</body>
+</html>
+jetson@ubuntu:~/Downloads$ 
+
 
