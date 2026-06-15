@@ -51,6 +51,7 @@ The index.html file is available in the source directory.
 The index.html is hosted by an Apache Web Server on a Ubuntu machine.
 
 ## System Diagram
+<img width="1150" height="1341" alt="image" src="https://github.com/user-attachments/assets/1e1a2de9-936d-4979-9704-2091527e31cf" />
 
 # How to Test
 
