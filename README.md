@@ -57,3 +57,8 @@ The index.html is hosted by an Apache Web Server on a Ubuntu machine.
 # How to Test
 
 Upload any alcohol label photo (or an AI-generated one), fill in some application fields, and click Verify label. The batch mode works great with multiple images dropped at once.
+
+## Test Conducted from a Windows Machine Local to the Router
+<img width="505" height="397" alt="image" src="https://github.com/user-attachments/assets/09a9032c-d0f2-4037-aa1f-f59928b9515e" />
+<img width="453" height="384" alt="image" src="https://github.com/user-attachments/assets/4bb4c425-1df8-4dd1-a1ac-2cc7514188a9" />
+
