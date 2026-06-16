@@ -50,6 +50,9 @@ The index.html file is available in the source directory.
 ## Apache Web Server
 The index.html is hosted by an Apache Web Server on a Ubuntu machine.
 
+## Application Architecture Diagram
+<img width="1440" height="1240" alt="image" src="https://github.com/user-attachments/assets/77f4b7bf-f4ca-4d5b-a9bd-f21f15d110d5" />
+
 ## System Diagram
 <img width="289" height="336" alt="image" src="https://github.com/user-attachments/assets/a7057bb4-9bd4-46e3-b16e-a3af9a80a979" />
 
