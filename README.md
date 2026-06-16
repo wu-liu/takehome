@@ -59,6 +59,8 @@ The index.html is hosted by an Apache Web Server on a Ubuntu machine.
 Upload any alcohol label photo (or an AI-generated one), fill in some application fields, and click Verify label. The batch mode works great with multiple images dropped at once.
 
 ## Test Conducted from a Windows Machine Local to the Router
-<img width="505" height="397" alt="image" src="https://github.com/user-attachments/assets/09a9032c-d0f2-4037-aa1f-f59928b9515e" />
-<img width="453" height="384" alt="image" src="https://github.com/user-attachments/assets/4bb4c425-1df8-4dd1-a1ac-2cc7514188a9" />
+<img width="505" height="397" alt="image" src="https://github.com/user-attachments/assets/09a9032c-d0f2-4037-aa1f-f59928b9515e" /> <img width="453" height="384" alt="image" src="https://github.com/user-attachments/assets/4bb4c425-1df8-4dd1-a1ac-2cc7514188a9" />
+
+## Test Conducted from an iPhone w/ Only Cellular Connection
+<img width="295" height="640" alt="image" src="https://github.com/user-attachments/assets/f54d123d-54e9-4b43-81d6-7b90e286d864" /> <img width="640" height="295" alt="image" src="https://github.com/user-attachments/assets/2b4b2124-ca39-4d84-b37c-6349bd040f48" />
 
